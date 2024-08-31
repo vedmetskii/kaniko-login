@@ -20,6 +20,32 @@ impl DockerRegistry {
     }
 }
 
+#[derive(Serialize)]
+pub struct Config {
+    auths: Registry
+}
+
+impl Config {
+    pub fn new(auths: Registry) -> Self {
+        Config { auths }
+    }
+
+    pub fn save_to_file(&self, path: String) {
+        let output = serde_json::to_string(&self);
+
+        if let Ok(j) = output {
+            let file = File::create(path.as_str());
+
+            match file {
+                Ok(mut file) => {
+                    let _res = file.write(j.as_bytes());
+                }
+                Err(_e) => {}
+            }
+        }
+    }
+}
+
 pub struct Registry {
     registry: String,
     auth: Auth
@@ -67,30 +93,3 @@ impl Serialize for Auth {
         s.end()
     }
 }
-
-#[derive(Serialize)]
-pub struct Config {
-    auths: Registry
-}
-
-impl Config {
-    pub fn new(auths: Registry) -> Self {
-        Config { auths }
-    }
-
-    pub fn save_to_file(&self, path: String) {
-        let output = serde_json::to_string(&self);
-
-        if let Ok(j) = output {
-            let mut file = File::create(path.as_str());
-
-            match file {
-                Ok(mut file) => {
-                    let res = file.write(j.as_bytes());
-                }
-                Err(e) => {}
-            }
-        }
-    }
-}
-

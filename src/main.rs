@@ -1,7 +1,6 @@
 use clap::Parser;
 
-use kaniko_login::{Args, get_password};
-use kaniko_login::registry::*;
+use kaniko_login::prelude::*;
 
 
 fn main() {
@@ -11,22 +10,11 @@ fn main() {
         password,
         username,
         password_stdin,
-        args
+        host
     } = input_args;
 
-    let host = args.first();
-
-    let mut registry_host: String;
-
-    if let Some(host) = host {
-        registry_host = host.clone();
-    } else {
-        eprintln!("Host not get");
-        return ;
-    }
-
     let docker_registry = DockerRegistry::new(
-        registry_host,
+        host,
         get_password(password, password_stdin),
         username
     );

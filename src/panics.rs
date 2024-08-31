@@ -1,11 +1,6 @@
-pub fn not_host() {
-    panic!("");
-}
+use std::process::exit;
 
 pub fn not_password() {
-    panic!("");
-}
-
-pub fn not_user() {
-    panic!("");
+    eprintln!("Error: Password Required");
+    exit(1);
 }

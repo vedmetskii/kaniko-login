@@ -1,15 +1,17 @@
-pub mod registry;
-pub mod panics;
+mod registry;
+mod panics;
+mod password;
+
+pub mod prelude {
+    pub use crate::password::get_password;
+    pub use crate::registry::{Registry, DockerRegistry, Config};
+    pub use crate::Args;
+}
 
 use clap::Parser;
-use std::io;
-use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
-use base64::prelude::*;
-use crate::panics::not_password;
 
 #[derive(Parser, Debug)]
-#[command(version, about)]
+#[command(version, about, long_about = "Cli util for registry kaniko in docker registry")]
 pub struct Args {
     #[arg(short = 'u', long)]
     pub username: String,
@@ -21,29 +23,5 @@ pub struct Args {
     pub password_stdin: Option<bool>,
 
     #[arg()]
-    pub args: Vec<String>
-}
-
-pub fn get_password(password: Option<String>, password_stdin: Option<bool>) -> String {
-    let mut registry_password: String = String::new();
-
-    if password_stdin == None || password_stdin == Some(false) {
-        if let Some(pass) = password {
-            registry_password = pass;
-        } else {
-            not_password();
-        }
-    } else {
-        let mut stdin_password = String::new();
-
-        let is_ok = io::stdin().read_line(&mut stdin_password);
-
-        if let Ok(_) = is_ok {
-            registry_password = stdin_password.trim().to_string();
-        } else {
-            not_password();
-        }
-    }
-
-    registry_password
+    pub host: String
 }
