@@ -10,8 +10,12 @@ fn main() {
         password,
         username,
         password_stdin,
-        host
+        host,
+        config,
+        output_file,
     } = input_args;
+
+    let path_to_config = config;
 
     let docker_registry = DockerRegistry::new(
         host,
@@ -19,7 +23,18 @@ fn main() {
         username
     );
 
-    let config = Config::new(Registry::from(docker_registry));
+    let mut config = Config::from(vec![docker_registry]);
 
-    config.save_to_file("config.json".to_string());
+    let exist_config;
+
+    if let Some(c) = path_to_config {
+        exist_config = get_exist_config(c).unwrap();
+        config.add_from_other(exist_config);
+    }
+
+    if let Some(file) = output_file {
+        config.save_to_file(file);
+    } else {
+        config.save_to_file("config.json".to_string());
+    }
 }

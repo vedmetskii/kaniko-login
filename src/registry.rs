@@ -1,5 +1,6 @@
-use serde::{Serialize, Serializer};
-use serde::ser::{SerializeMap, SerializeStruct};
+use std::collections::HashMap;
+use serde::{Deserialize, Serialize, Serializer};
+use serde::ser::{SerializeStruct};
 use base64::prelude::*;
 use std::fs::File;
 use std::io::Write;
@@ -20,14 +21,53 @@ impl DockerRegistry {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Debug)]
 pub struct Config {
-    auths: Registry
+    auths: HashMap<String, Auth>
+}
+
+impl From<Vec<DockerRegistry>> for Config {
+    fn from(value: Vec<DockerRegistry>) -> Self {
+        let mut auths = HashMap::new();
+        for registry in value.into_iter() {
+            auths.insert(registry.host, Auth::new(registry.username, registry.password));
+        }
+
+        Config {
+            auths
+        }
+    }
+}
+
+impl Serialize for Config {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut s = serializer.serialize_struct("NewConfig", 1)?;
+        s.serialize_field("auths", &self.auths)?;
+        s.end()
+    }
 }
 
 impl Config {
-    pub fn new(auths: Registry) -> Self {
-        Config { auths }
+    pub fn get_auths(self) -> HashMap<String, Auth> {
+        let mut answer = HashMap::new();
+
+        for (key, value) in self.auths.into_iter() {
+            answer.insert(key, value);
+        }
+
+        answer
+    }
+
+    pub fn add_from_other(&mut self, other: Config) {
+        for (key, value) in other.get_auths() {
+            if let Some(_) = self.auths.get(&key) {
+                continue;
+            }
+            self.auths.insert(key, value);
+        }
     }
 
     pub fn save_to_file(&self, path: String) {
@@ -46,31 +86,7 @@ impl Config {
     }
 }
 
-pub struct Registry {
-    registry: String,
-    auth: Auth
-}
-
-impl Serialize for Registry {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut s = serializer.serialize_map(Some(1))?;
-        s.serialize_entry(&self.registry, &self.auth)?;
-        s.end()
-    }
-}
-
-impl From<DockerRegistry> for Registry {
-    fn from(value: DockerRegistry) -> Self {
-        Registry {
-            auth: Auth::new(value.username, value.password),
-            registry: value.host
-        }
-    }
-}
-
+#[derive(Deserialize, Debug)]
 pub struct Auth {
     auth: String
 }
