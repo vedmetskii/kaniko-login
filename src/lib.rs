@@ -14,22 +14,22 @@ use crate::panics::{config_is_not_allowed, config_not_found};
 use crate::registry::Config;
 
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = "Cli util for registry kaniko in docker registry")]
+#[command(author, version, about, long_about = "Cli util for registry kaniko in docker registry")]
 pub struct Args {
     #[arg(short = 'u', long)]
     pub username: String,
 
-    #[arg(short = 'c', long)]
+    #[arg(short, long)]
     pub config: Option<String>,
 
     #[arg(long)]
     pub output_file: Option<String>,
 
-    #[arg(short = 'p', long)]
+    #[arg(short, long)]
     pub password: Option<String>,
 
     #[arg(long)]
-    pub password_stdin: Option<bool>,
+    pub password_stdin: bool,
 
     #[arg()]
     pub host: String

@@ -1,6 +1,6 @@
 [package]
 name = "kaniko-login"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["Kirill Vedmetskii <kirik@kirill-vedmetskii.ru"]
 license = "MIT"
